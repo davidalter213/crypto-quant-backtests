@@ -1,42 +1,47 @@
+'''
+This script is a simple example of how to use the backtesting library to backtest a strategy that uses the RSI, EMA, and MACD indicators.
+Using the backtesting library, we can easily backtest a strategy that uses the RSI, EMA, and MACD indicators to generate buy and sell signals.
+
+The strategy is defined as follows:
+- If the RSI is above 50, the fast MACD is above the slow MACD, and the close price is above the fast EMA, generate a buy signal.
+- If the RSI is below 50, the fast MACD is below the slow MACD, and the close price is below the fast EMA, generate a sell signal.
+
+Use longer term time frames like 12h.
+'''
+
 import pandas as pd
 from backtesting import Backtest, Strategy
-import ta
+from talib import RSI, EMA, MACD
 
 class RSIMACDxEMA(Strategy):
 
     def init(self):
 
-        self.data['Close'] = pd.to_numeric(self.data['Close'], errors='coerce')
-
-        # Check data after conversion
-        print(self.data.head())
-
-        # Initialize the RSI, MACD, and EMA using the 'ta' library
-        self.rsi = ta.momentum.RSIIndicator(self.data.Close, 14).rsi()
-        macd = ta.trend.MACD(self.data.Close, 12, 26, 9)
-        self.fast_macd = macd.macd()
-        self.slow_macd = macd.macd_signal()
-        self.ema = ta.trend.EMAIndicator(self.data.Close, 20).ema_indicator()
+        self.rsi = self.I(RSI, self.data.Close, timeperiod =11)
+        self.fast_macd, self.slow_macd, _ = self.I(MACD, self.data.Close, fastperiod=11, slowperiod=30)
+        self.ema_fast = self.I(EMA, self.data.Close, timeperiod=22)
+        self.ema_slow = self.I(EMA, self.data.Close, timeperiod=75)
 
     def next(self):
-        # Define the trading signals
+
         is_long_signal = (
-            self.rsi[-1] > 50 and
-            self.fast_macd[-1] > self.slow_macd[-1] and
-            self.data.Close[-1] > self.ema[-1]
+            self.rsi > 50 and
+            self.fast_macd > self.slow_macd and
+            self.data.Close > self.ema_fast
         )
 
         is_short_signal = (
-            self.rsi[-1] < 50 and
-            self.fast_macd[-1] < self.slow_macd[-1] and
-            self.data.Close[-1] < self.ema[-1]
+            self.rsi < 50 and
+            self.fast_macd < self.slow_macd and
+            self.data.Close < self.ema_fast
         )
 
-        # Execute trade orders based on the signals
         if is_long_signal:
             self.buy()
         elif is_short_signal:
             self.sell()
+
+# Load data
 
 data = pd.read_csv('/Users/davidalter/market_maker_botv1/ETH6h_2019-01-01_to_2025-01-01.csv', parse_dates=True, index_col='date')
 

@@ -1,3 +1,10 @@
+'''
+This is a simple EMA strategy that buys when the 11 EMA is above 
+the 17 EMA and sells when the 11 EMA is below the 17 EMA.
+
+1h timeframe
+'''
+
 import pandas as pd
 from backtesting import Backtest, Strategy
 

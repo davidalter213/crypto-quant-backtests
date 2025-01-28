@@ -31,8 +31,8 @@ def fetch_and_save_historical_data(symbol, timeframe, start_date, end_date, file
     print(f"Saved {len(df)} rows to {filename}")
 
 symbol = 'ETH/USDT'
-timeframe = '6h'
-start_date = '2019-01-01'
+timeframe = '4h'
+start_date = '2022-01-01'
 end_date = '2025-01-01'
 
 filename = f'{timeframe}_{start_date}_to_{end_date}.csv'
